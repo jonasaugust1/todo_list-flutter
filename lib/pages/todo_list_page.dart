@@ -1,7 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:todo_list/widgets/todo_list_item.dart';
 
-class TodoListPage extends StatelessWidget {
+class TodoListPage extends StatefulWidget {
   const TodoListPage({Key? key}) : super(key: key);
+
+  @override
+  State<TodoListPage> createState() => _TodoListPageState();
+}
+
+class _TodoListPageState extends State<TodoListPage> {
+  final TextEditingController todoController = TextEditingController();
+
+  List<String> todos = [];
 
   @override
   Widget build(BuildContext context) {
@@ -14,9 +24,10 @@ class TodoListPage extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: TextField(
-                      decoration: InputDecoration(
+                      controller: todoController,
+                      decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         labelText: 'Adicione uma tarefa',
                         hintText: 'Ex: Estudar Flutter',
@@ -25,7 +36,12 @@ class TodoListPage extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton(
-                      onPressed: null,
+                      onPressed: () {
+                        setState(() {
+                          todos.add(todoController.text);
+                        });
+                        todoController.clear();
+                      },
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all(const Color(0xff00d7f3)),
                       padding: MaterialStateProperty.all(const EdgeInsets.all(14))
@@ -37,6 +53,16 @@ class TodoListPage extends StatelessWidget {
                       ),
                   )
                 ],
+              ),
+              const SizedBox(height: 16),
+              Flexible(
+                child: ListView(
+                  shrinkWrap: true,
+                  children: [
+                      for(String todo in todos)
+                        const TodoListItem()
+                  ],
+                ),
               ),
               const SizedBox(height: 16),
               Row(
