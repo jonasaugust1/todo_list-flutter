@@ -3,6 +3,8 @@ import 'package:todo_list/models/todo.dart';
 import 'package:todo_list/repositories/todo_repository.dart';
 import 'package:todo_list/widgets/todo_list_item.dart';
 
+const int primaryColor = 0xff00d7f3;
+
 class TodoListPage extends StatefulWidget {
   const TodoListPage({Key? key}) : super(key: key);
 
@@ -17,6 +19,7 @@ class _TodoListPageState extends State<TodoListPage> {
   List<Todo> todos = [];
   Todo? deletedTodo;
   int? deletedTodoPosition;
+  String? errorText;
 
   @override
   void initState(){
@@ -44,28 +47,29 @@ class _TodoListPageState extends State<TodoListPage> {
                     Expanded(
                       child: TextField(
                         controller: todoController,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
                           labelText: 'Adicione uma tarefa',
                           hintText: 'Ex: Estudar Flutter',
+                          errorText: errorText,
+                          focusedBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Color(primaryColor),
+                              width: 2,
+                            )
+                          ),
+                          labelStyle: const TextStyle(
+                            color: Color(primaryColor),
+                          )
                         ),
                       ),
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          Todo newTodo = Todo(
-                              title: todoController.text,
-                              dateTime: DateTime.now());
-                          todos.add(newTodo);
-                        });
-                        todoController.clear();
-                        todoRepository.saveTodoList(todos);
-                      },
+                      onPressed: saveTodo,
                       style: ButtonStyle(
                           backgroundColor: MaterialStateProperty.all(
-                              const Color(0xff00d7f3)),
+                              const Color(primaryColor)),
                           padding: MaterialStateProperty.all(
                               const EdgeInsets.all(14))),
                       child: const Icon(
@@ -99,7 +103,7 @@ class _TodoListPageState extends State<TodoListPage> {
                         },
                         style: ButtonStyle(
                           backgroundColor: MaterialStateProperty.all(
-                              const Color(0xff00d7f3)),
+                              const Color(primaryColor)),
                           padding: MaterialStateProperty.all(
                               const EdgeInsets.all(14)),
                         ),
@@ -117,6 +121,26 @@ class _TodoListPageState extends State<TodoListPage> {
     );
   }
 
+  void saveTodo() {
+    if(todoController.text.isEmpty) {
+      setState(() {
+        errorText = 'A tarefa não pode ser vazia.';
+      });
+
+      return;
+    }
+
+    setState(() {
+      Todo newTodo = Todo(
+          title: todoController.text,
+          dateTime: DateTime.now());
+      todos.add(newTodo);
+      errorText = null;
+    });
+    todoController.clear();
+    todoRepository.saveTodoList(todos);
+  }
+
   void onDelete(BuildContext context, Todo todo) {
     deletedTodo = todo;
     deletedTodoPosition = todos.indexOf(todo);
@@ -127,6 +151,10 @@ class _TodoListPageState extends State<TodoListPage> {
 
     todoRepository.saveTodoList(todos);
 
+    removeAndAskToUndoDelete(todo);
+  }
+
+  void removeAndAskToUndoDelete(Todo todo) {
     ScaffoldMessenger.of(context).clearSnackBars();
 
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -137,7 +165,7 @@ class _TodoListPageState extends State<TodoListPage> {
       backgroundColor: Colors.white,
       action: SnackBarAction(
         label: 'Desfazer',
-        textColor: const Color(0xff00d7f3),
+        textColor: const Color(primaryColor),
         onPressed: () {
           setState(() {
             todos.insert(deletedTodoPosition!, deletedTodo!);

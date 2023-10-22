@@ -16,7 +16,7 @@ class TodoListItem extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Slidable(
           endActionPane: ActionPane(
-            motion: DrawerMotion(),
+            motion: const DrawerMotion(),
             extentRatio: 0.25,
             children: [
               SlidableAction(
